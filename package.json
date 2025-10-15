@@ -1,7 +1,7 @@
 {
   "name": "cc-tokenizer",
   "type": "module",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "NPM credit card tokenizer",
   "main": "src/index.js",
   "scripts": {
@@ -24,7 +24,6 @@
   "homepage": "https://github.com/mdmoren/cc-tokenizer#readme",
   "dependencies": {
     "axios": "^1.12.2",
-    "crypto": "^1.0.1",
     "easy-soap-request": "^5.7.0",
     "fast-xml-parser": "^5.3.0"
   }

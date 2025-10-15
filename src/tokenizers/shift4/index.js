@@ -45,7 +45,7 @@ class Shift4Tokenizer {
             customer: {
                 firstName: firstName,
                 lastName: lastName,
-                postalCode: postalCode
+                postalCode: postalCode || ''
             }
         }
 

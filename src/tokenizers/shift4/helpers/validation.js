@@ -10,10 +10,7 @@ export const validateShift4Payload = (payload) => {
         returnVal.ok = false;
         returnVal.errors.push('Missing required field: customer.lastName');
     }
-    if (!payload.customer?.postalCode) {
-        returnVal.ok = false;
-        returnVal.errors.push('Missing required field: customer.postalCode');
-    }
+
     if (!payload.card?.number) {
         returnVal.ok = false;
         returnVal.errors.push('Missing required field: card.number');
