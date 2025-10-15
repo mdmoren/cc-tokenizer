@@ -14,7 +14,8 @@ export const globalConfig = {
     },
     freedomPay: {
         common: {
-            cardStorHost: "http://cardstor.freedompay.com/"
+            cardStorHost: "http://cardstor.freedompay.com/",
+            freewayHost: "http://freeway.freedompay.com/"
         },
         production: {
             baseUrl: "https://cs.freedompay.us/CardStor/CardStorService.asmx"

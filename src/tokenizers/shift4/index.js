@@ -1,4 +1,5 @@
 import { globalConfig } from '../../lib/config.js'
+import { validateShift4Payload } from './helpers/validation.js'
 import axios from 'axios'
 
 class Shift4Tokenizer {
@@ -6,7 +7,6 @@ class Shift4Tokenizer {
         this.name = 'shift4'
         this.baseUrl = globalConfig.shift4[environment].baseUrl
         this.routes = globalConfig.shift4.common.routes
-        this.environment = environment
         this.accessToken = config.accessToken
         this.companyName = config.companyName
         this.interfaceName = config.interfaceName
@@ -23,7 +23,8 @@ class Shift4Tokenizer {
         let response = {
             success: false,
             message: '',
-            data: {}
+            data: {},
+            errors: []
         }
 
         const url = this.baseUrl + this.routes.add
@@ -34,20 +35,6 @@ class Shift4Tokenizer {
             InterfaceVersion: this.interfaceVersion,
             'Content-Type': 'application/json'
         }
-
-        // expected payload
-        // {
-        //     "dateTime": "YYYY-MM-DDTHH:MM:SS.000-00:00",
-        //     "card":{
-        //         "expirationDate": MMYY, // number
-        //         "number":"" // numerical string
-        //      },
-        //     "customer": {
-        //         "firstName": "First",
-        //         "lastName": "Last",
-        //         "postalCode":"12345"
-        //      }
-        // }
 
         const payload = {
             dateTime: new Date().toISOString(),
@@ -63,13 +50,21 @@ class Shift4Tokenizer {
         }
 
         try {
-            const shift4Req = await axios.post(url, payload, { headers })
-
-            if (shift4Req && shift4Req.error) {
-                response.message = shift4Req.data.error?.longText || 'Error: could not tokenize card using Shift4'
+            const schemaValidation = validateShift4Payload(payload)
+            if (!schemaValidation.ok) {
+                response.message = 'Error: Schema Validation Failed'
+                response.errors = schemaValidation.errors
+                return response
             }
 
-            if (shift4Req && shift4Req.data.result) {
+            const shift4Req = await axios.post(url, payload, { headers })
+
+            if (shift4Req.data.result.error) {
+                response.message = 'Error: could not tokenize card using Shift4'
+                response.errors.push(shift4Req.data.result.error || {})
+            }
+
+            if (shift4Req.data.result) {
                 response.success = true
                 response.message = 'Card tokenized successfully using Shift4'
                 response.data = shift4Req.data.result
@@ -78,8 +73,8 @@ class Shift4Tokenizer {
             return response
 
         } catch (error) {
-            console.error('Error:', error);
-            response.message = error.message || 'Error: could not tokenize card using Shift4'
+            response.message = error.message || 'Internal Error: could not tokenize card using Shift4'
+            response.errors.push(error.stack || {})
 
             return response
         }

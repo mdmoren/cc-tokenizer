@@ -13,9 +13,25 @@ export class CCTokenizer {
         // Initialize enabled tokenizers
         if (options.shift4 && options.shift4.enabled) {
             this.tokenizers.shift4 = new Shift4Tokenizer(environment, options.shift4);
+            // expected options:
+            // {
+            //     accessToken: 'your-access-token',    
+            //     companyName: 'Your Company',
+            //     interfaceName: 'Your Interface',
+            //     interfaceVersion: '1.0.0'
+            // }
         }
-        if (options.freedomPay) {
-            this.tokenizers.freedomPay = new FreedomPayTokenizer(environment);
+        if (options.freedomPay && options.freedomPay.enabled) {
+            this.tokenizers.freedomPay = new FreedomPayTokenizer(environment, options.freedomPay);
+            // expected options:
+            // {
+            //     fpStoreId: 'your-store-id',
+            //     fpTerminalId: 'your-terminal-id',
+            //     fpEskey: 'your-eskey',
+            //     fpKsn: 'your-ksn',
+            //     fpRsa: 'your-rsa',
+            //     fpTokenType: 'your-token-type'
+            // }
         }
     }
 
