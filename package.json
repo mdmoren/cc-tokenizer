@@ -17,7 +17,7 @@
     "shift4"
   ],
   "author": "Mark Moreno",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/mdmoren/cc-tokenizer/issues"
   },
