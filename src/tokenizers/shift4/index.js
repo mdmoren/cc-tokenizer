@@ -67,7 +67,7 @@ class Shift4Tokenizer {
             if (shift4Req.data.result) {
                 response.success = true
                 response.message = 'Card tokenized successfully using Shift4'
-                response.data = shift4Req.data.result
+                response.data = Array.isArray(shift4Req.data.result) ? shift4Req.data.result[0] || {} : shift4Req.data.result || {}
             }
 
             return response
