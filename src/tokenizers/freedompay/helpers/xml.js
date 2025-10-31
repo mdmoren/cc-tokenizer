@@ -1,24 +1,39 @@
 import {XMLBuilder, XMLParser} from 'fast-xml-parser';
+import crypto from 'crypto';
 
-export function freedomPayBuildXML(
+function onlyDigits(v) {
+    return String(v ?? '').replace(/\D/g, '');
+}
+
+function normalizeExpiration(expirationMonth, expirationYear) {
+    const mm = onlyDigits(expirationMonth).padStart(2, '0');
+    const yy = onlyDigits(expirationYear).slice(-2).padStart(2, '0');
+
+    const mmNum = Number(mm);
+    if (!(mmNum >= 1 && mmNum <= 12)) {
+        throw new Error(`Invalid expiration month: ${expirationMonth}`);
+    }
+    return { mm, yy };
+}
+
+
+export function cardStorBuildXML(
     storeId, 
     terminalId, 
-    esKey,
-    trackKsn, 
-    rsaPublicKeyPem, 
     tokenType, 
     cardStorHost, 
     freewayHost, 
     cardNumber,        
     expirationMonth,
-    expirationYear,
-    securityCode
+    expirationYear
 ) {
     const builder = new XMLBuilder({
         ignoreAttributes: false,
         attributeNamePrefix: '@_',
         format: true,
     });
+
+    const { mm } = normalizeExpiration(expirationMonth, expirationYear);
 
     const body = {
         'soap:Envelope': {
@@ -35,7 +50,7 @@ export function freedomPayBuildXML(
                         type: tokenType,
                         card: {
                             accountNumber: { '@_xmlns': freewayHost, '#text': cardNumber },
-                            expirationMonth: { '@_xmlns': freewayHost, '#text': expirationMonth },
+                            expirationMonth: { '@_xmlns': freewayHost, '#text': mm },
                             expirationYear: { '@_xmlns': freewayHost, '#text': expirationYear },
                         }
                     }
@@ -45,6 +60,77 @@ export function freedomPayBuildXML(
     };
 
     return builder.build(body);
+}
+
+function hasSubtleCrypto() {
+    return typeof globalThis !== 'undefined' && !!globalThis.crypto && !!globalThis.crypto.subtle;
+}
+
+function arrayBufferToBase64(buf) {
+    if (typeof Buffer !== 'undefined') {
+        return Buffer.from(new Uint8Array(buf)).toString('base64');
+    }
+    let binary = '';
+    const bytes = new Uint8Array(buf);
+    for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+    // btoa is available in browsers
+    return btoa(binary);
+}
+
+function pemToSpkiArrayBuffer(pem) {
+    const cleaned = String(pem)
+        .replace(/-----BEGIN PUBLIC KEY-----/g, '')
+        .replace(/-----END PUBLIC KEY-----/g, '')
+        .replace(/\s+/g, '');
+    if (typeof Buffer !== 'undefined') {
+        return Uint8Array.from(Buffer.from(cleaned, 'base64')).buffer;
+    }
+    const raw = atob(cleaned);
+    const out = new Uint8Array(raw.length);
+    for (let i = 0; i < raw.length; i++) out[i] = raw.charCodeAt(i);
+    return out.buffer;
+}
+
+export async function freedomPayMakeTracke(
+    cardNumber,        
+    expirationMonth,
+    expirationYear,
+    securityCode,
+    rsaPublicKeyPem 
+) {
+    // Spec: M{PAN}={YY}{MM}:{CVV}
+    const { mm, yy } = normalizeExpiration(expirationMonth, expirationYear);
+    const pan = onlyDigits(cardNumber);
+    const cvv = onlyDigits(securityCode);
+
+    const payload = `M${pan}=${yy}${mm}:${cvv}`;
+
+    if (hasSubtleCrypto()) {
+        // Browser: use Web Crypto (RSA-OAEP with SHA-1)
+        const pem = freedomPayValidatePem(rsaPublicKeyPem);
+        const spki = pemToSpkiArrayBuffer(pem);
+        const key = await globalThis.crypto.subtle.importKey(
+            'spki',
+            spki,
+            { name: 'RSA-OAEP', hash: 'SHA-1' },
+            false,
+            ['encrypt']
+        );
+        const encoded = new TextEncoder().encode(payload);
+        const encrypted = await globalThis.crypto.subtle.encrypt({ name: 'RSA-OAEP' }, key, encoded);
+        return arrayBufferToBase64(encrypted);
+    } else {
+        // Node: use crypto.publicEncrypt (RSA-OAEP with SHA-1)
+        const encrypted = crypto.publicEncrypt(
+            {
+                key: freedomPayValidatePem(rsaPublicKeyPem),
+                padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
+                oaepHash: 'sha1',
+            },
+            Buffer.from(payload, 'utf8')
+        );
+        return encrypted.toString('base64');
+    }
 }
 
 export function freedomPayParseXML(response) {
@@ -102,4 +188,105 @@ export function freedomPayParseXML(response) {
         ok: false,
         response: result ?? json
     };
+}
+
+export function freedomPayValidatePem(pem) {
+    if (!pem) {
+        throw new Error('Missing RSA public key');
+    }
+
+    const trimmed = String(pem).trim().replace(/^"|"$/g, '');
+
+    if (/-----BEGIN [A-Z ]+KEY-----/.test(trimmed)) {
+        return trimmed; // already PEM
+    }
+
+    const base64 = trimmed.replace(/\s+/g, '');
+    const wrapped = base64.match(/.{1,64}/g)?.join('\n') || base64;
+
+    return `-----BEGIN PUBLIC KEY-----\n${wrapped}\n-----END PUBLIC KEY-----`;
+}
+
+export async function freeWayBuildXML(
+    storeId, 
+    terminalId, 
+    trackKsn, 
+    rsaPublicKeyPem, 
+    tokenType, 
+    freewayHost, 
+    cardNumber,        
+    expirationMonth,
+    expirationYear,
+    securityCode,
+    firstName,
+    lastName,
+    merchantReferenceCode = null
+) {
+    const tracke = await freedomPayMakeTracke(
+        cardNumber,        
+        expirationMonth,
+        expirationYear,
+        securityCode,
+        rsaPublicKeyPem 
+    );
+
+    if (!tracke) {
+        throw new Error('Error generating encrypted tracke data');
+    }
+
+    const builder = new XMLBuilder({
+        ignoreAttributes: false,
+        attributeNamePrefix: '@_',
+        suppressBooleanAttributes: false,
+        format: true,
+    });
+
+    const request = {
+        storeId,
+        terminalId,
+        card: {
+            cardType: 'credit',
+            nameOnCard: `${firstName} ${lastName}`,
+        },
+        pos: {
+            entryMode: 'keyed',
+            cardPresent: 'N',
+            trackKsn,
+            tracke,
+            encMode: 'rsa',
+            msrType: 'none'
+        },
+        tokenCreateService: {
+            '@_run': 'true',
+            type: tokenType
+        },
+        ccAuthService: {
+            '@_run': 'true',
+            commerceIndicator: 'internet',
+            cofIndicator: 'S'
+        },
+        purchaseTotals: {
+            chargeAmount: '0'
+        }
+    };
+
+    if (merchantReferenceCode) {
+        request.merchantReferenceCode = merchantReferenceCode;
+    }
+    
+    const body = {
+        'soap:Envelope': {
+            '@_xmlns:soap': 'http://schemas.xmlsoap.org/soap/envelope/',
+            '@_xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
+            '@_xmlns:xsd': 'http://www.w3.org/2001/XMLSchema',
+            'soap:Body': {
+                Submit: {
+                    '@_xmlns': freewayHost,
+                    request
+                }
+            }
+        }
+    };
+
+    return builder.build(body);
 }

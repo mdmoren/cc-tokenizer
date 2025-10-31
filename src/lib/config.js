@@ -18,10 +18,12 @@ export const globalConfig = {
             freewayHost: "http://freeway.freedompay.com/"
         },
         production: {
-            baseUrl: "https://cs.freedompay.us/CardStor/CardStorService.asmx"
+            baseUrlCardStor: "https://cs.freedompay.us/CardStor/CardStorService.asmx",
+            baseUrlFreeway: "https://cs.uat.freedompay.com/Freeway/Service.asmx",
         },
         test: {
-            baseUrl: "https://cs.uat.freedompay.com/CardStor/CardStorService.asmx"
+            baseUrlCardStor: "https://cs.uat.freedompay.com/CardStor/CardStorService.asmx",
+            baseUrlFreeway: "https://cs.uat.freedompay.com/Freeway/Service.asmx",
         }
     }
 }

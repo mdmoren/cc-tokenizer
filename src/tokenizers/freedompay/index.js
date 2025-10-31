@@ -1,6 +1,6 @@
 import { globalConfig } from '../../lib/config.js'
-import { freedomPayBuildXML, freedomPayParseXML } from './helpers/xml.js'
-import { validateFreedomPayPayload } from './helpers/validation.js'
+import { cardStorBuildXML, freedomPayParseXML, freeWayBuildXML } from './helpers/xml.js'
+import { validateCardStorPayload, validateFreeWayPayload } from './helpers/validation.js'
 import soapRequest from 'easy-soap-request'
 
 class FreedomPayTokenizer {
@@ -8,7 +8,8 @@ class FreedomPayTokenizer {
         this.name = 'freedomPay'
         this.cardStorHost = globalConfig.freedomPay.common.cardStorHost
         this.freewayHost = globalConfig.freedomPay.common.freewayHost
-        this.baseUrl = globalConfig.freedomPay[environment].baseUrl
+        this.baseUrlCardStor = globalConfig.freedomPay[environment].baseUrlCardStor
+        this.baseUrlFreeway = globalConfig.freedomPay[environment].baseUrlFreeway
         this.fpStoreId = config.fpStoreId
         this.fpTerminalId = config.fpTerminalId
         this.fpEskey = config.fpEskey
@@ -17,7 +18,7 @@ class FreedomPayTokenizer {
         this.fpTokenType = config.fpTokenType
     }
 
-    async tokenize({
+    async cardStorTokenize({
         cardNumber,
         expirationMonth,
         expirationYear,
@@ -35,26 +36,22 @@ class FreedomPayTokenizer {
             'SOAPAction': `${this.cardStorHost}Submit`
         };
 
-        const xml = freedomPayBuildXML(
+        const xml = cardStorBuildXML(
             this.fpStoreId,
             this.fpTerminalId,
-            this.fpEskey,
-            this.fpKsn,
-            this.fpRsa,
             this.fpTokenType,
             this.cardStorHost,
             this.freewayHost,
             cardNumber,
             expirationMonth,
-            expirationYear,
-            securityCode
+            expirationYear
         );
 
         if (xml) {
             let soapResponse;
 
             try {
-                const schemaValidation = validateFreedomPayPayload(
+                const schemaValidation = validateCardStorPayload(
                     cardNumber,
                     expirationMonth,
                     expirationYear,
@@ -67,7 +64,7 @@ class FreedomPayTokenizer {
                 }
 
                 soapResponse = await soapRequest({
-                    url: this.baseUrl,
+                    url: this.baseUrlCardStor,
                     headers: headers || {},
                     xml: xml
                 });
@@ -76,17 +73,101 @@ class FreedomPayTokenizer {
 
                 if (parsedXML.ok === true && parsedXML.response) {
                     response.success = true;
-                    response.message = 'Card tokenized successfully using FreedomPay';
+                    response.message = 'Card tokenized successfully using FreedomPay CardStor';
                     response.data = parsedXML.response;
                 } else {
-                    response.message = 'Error: could not tokenize card using FreedomPay';
+                    response.message = 'Error: could not tokenize card using FreedomPay CardStor';
                     response.errors.push(parsedXML.response || {});
                 }
 
                 return response
             } catch (error) {
-                response.message = 'Internal Error: could not tokenize card using FreedomPay';
+                response.message = 'Internal Error: could not tokenize card using FreedomPay CardStor';
                 response.errors.push(error || {});
+                return response
+            }
+        }
+    }
+
+        async freeWayTokenize({
+        cardNumber,
+        expirationMonth,
+        expirationYear,
+        securityCode,
+        firstName,
+        lastName,
+        merchantReferenceCode = 'MERCH_REF_001'
+    }) {
+        let response = {
+            success: false,
+            message: '',
+            data: {},
+            errors: []
+        }
+
+        const headers = {
+            'Content-Type': 'text/xml;charset=utf-8',
+            'SOAPAction': `${this.freewayHost}Submit`
+        };
+
+        const xml = await freeWayBuildXML(
+            this.fpStoreId,
+            this.fpTerminalId,
+            this.fpKsn,
+            this.fpRsa,
+            this.fpTokenType,
+            this.freewayHost,
+            cardNumber,
+            expirationMonth,
+            expirationYear,
+            securityCode,
+            firstName,
+            lastName,
+            merchantReferenceCode
+        );
+
+        if (xml) {
+            let soapResponse;
+
+            try {
+                const schemaValidation = validateFreeWayPayload(
+                    cardNumber,
+                    expirationMonth,
+                    expirationYear,
+                    securityCode,
+                    firstName,
+                    lastName,
+                    merchantReferenceCode
+                )
+                if (!schemaValidation.ok) {
+                    response.message = 'Error: Schema Validation Failed'
+                    response.errors = schemaValidation.errors
+                    return response
+                }
+
+                soapResponse = await soapRequest({
+                    url: this.baseUrlFreeway,
+                    headers: headers || {},
+                    xml: xml
+                });
+
+                const parsedXML = freedomPayParseXML(soapResponse.response.body)
+
+                if (parsedXML.ok === true && parsedXML.response) {
+                    response.success = true;
+                    response.message = 'Card tokenized successfully using FreedomPay Freeway';
+                    response.data = parsedXML.response;
+                } else {
+                    response.message = 'Error: could not tokenize card using FreedomPay Freeway';
+                    response.errors.push(parsedXML.response || {});
+                }
+
+
+                return response
+            } catch (error) {
+                response.message = 'Internal Error: could not tokenize card using FreedomPay Freeway';
+                response.errors.push(error || {});
+
                 return response
             }
         }
