@@ -149,7 +149,7 @@ console.log('[TEST] FreedomPay CardStor:', JSON.stringify(cardStorResult, null, 
 #### Freeway
 
 ```ts
-const freeWayResult = await freedomPay.freeWayTokenize({
+const freewayResult = await freedomPay.freewayTokenize({
   cardNumber: '1111222233334444',
   expirationMonth: '10', // MM format
   expirationYear: '26',  // YY format
@@ -159,7 +159,7 @@ const freeWayResult = await freedomPay.freeWayTokenize({
   merchantReferenceCode: 'your-internal-ref-123' // optional
 });
 
-console.log('[TEST] FreedomPay Freeway:', JSON.stringify(freeWayResult, null, 2));
+console.log('[TEST] FreedomPay Freeway:', JSON.stringify(freewayResult, null, 2));
 ```
 
 #### Example Success Response (CardStor/Freeway)
