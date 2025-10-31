@@ -2,10 +2,15 @@
 
 A unified interface for tokenizing credit cards using Shift4 and FreedomPay.
 
+## 🎉 Now with Full TypeScript Support!
+
+This package is now written in TypeScript and includes comprehensive type definitions for better development experience and type safety.
+
 ---
 
 ## Features
 
+- **TypeScript Support**: Full type definitions and IntelliSense support
 - **Shift4 Tokenizer**: Tokenize cards with Shift4 Universal Token service using secure credentials.
 - **FreedomPay Tokenizers**:
   - CardStor: SOAP-based tokenization via FreedomPay CardStore service.
@@ -20,6 +25,12 @@ A unified interface for tokenizing credit cards using Shift4 and FreedomPay.
 ```bash
 npm install cc-tokenizer
 ```
+
+---
+
+## TypeScript Support
+
+This package now includes full TypeScript support with comprehensive type definitions. See [TYPESCRIPT.md](./TYPESCRIPT.md) for detailed TypeScript usage examples and available types.
 
 ---
 

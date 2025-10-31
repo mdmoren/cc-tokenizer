@@ -1,4 +1,43 @@
-export const globalConfig = {
+export interface RouteConfig {
+    add: string;
+}
+
+export interface CommonShift4Config {
+    routes: RouteConfig;
+}
+
+export interface EnvironmentShift4Config {
+    baseUrl: string;
+}
+
+export interface CommonFreedomPayConfig {
+    cardStorHost: string;
+    freewayHost: string;
+}
+
+export interface EnvironmentFreedomPayConfig {
+    baseUrlCardStor: string;
+    baseUrlFreeway: string;
+}
+
+export interface Shift4Config {
+    common: CommonShift4Config;
+    production: EnvironmentShift4Config;
+    test: EnvironmentShift4Config;
+}
+
+export interface FreedomPayConfig {
+    common: CommonFreedomPayConfig;
+    production: EnvironmentFreedomPayConfig;
+    test: EnvironmentFreedomPayConfig;
+}
+
+export interface GlobalConfig {
+    shift4: Shift4Config;
+    freedomPay: FreedomPayConfig;
+}
+
+export const globalConfig: GlobalConfig = {
     shift4: {
         common: {
             routes: {
@@ -26,4 +65,4 @@ export const globalConfig = {
             baseUrlFreeway: "https://cs.uat.freedompay.com/Freeway/Service.asmx",
         }
     }
-}
+};

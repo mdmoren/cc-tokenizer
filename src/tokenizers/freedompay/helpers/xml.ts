@@ -1,11 +1,11 @@
 import {XMLBuilder, XMLParser} from 'fast-xml-parser';
 import crypto from 'crypto';
 
-function onlyDigits(v) {
+function onlyDigits(v: string | number | null | undefined): string {
     return String(v ?? '').replace(/\D/g, '');
 }
 
-function normalizeExpiration(expirationMonth, expirationYear) {
+function normalizeExpiration(expirationMonth: string, expirationYear: string): { mm: string; yy: string } {
     const mm = onlyDigits(expirationMonth).padStart(2, '0');
     const yy = onlyDigits(expirationYear).slice(-2).padStart(2, '0');
 
@@ -16,17 +16,16 @@ function normalizeExpiration(expirationMonth, expirationYear) {
     return { mm, yy };
 }
 
-
 export function cardStorBuildXML(
-    storeId, 
-    terminalId, 
-    tokenType, 
-    cardStorHost, 
-    freewayHost, 
-    cardNumber,        
-    expirationMonth,
-    expirationYear
-) {
+    storeId: string, 
+    terminalId: string, 
+    tokenType: string, 
+    cardStorHost: string, 
+    freewayHost: string, 
+    cardNumber: string,        
+    expirationMonth: string,
+    expirationYear: string
+): string {
     const builder = new XMLBuilder({
         ignoreAttributes: false,
         attributeNamePrefix: '@_',
@@ -62,11 +61,11 @@ export function cardStorBuildXML(
     return builder.build(body);
 }
 
-function hasSubtleCrypto() {
+function hasSubtleCrypto(): boolean {
     return typeof globalThis !== 'undefined' && !!globalThis.crypto && !!globalThis.crypto.subtle;
 }
 
-function arrayBufferToBase64(buf) {
+function arrayBufferToBase64(buf: ArrayBuffer): string {
     if (typeof Buffer !== 'undefined') {
         return Buffer.from(new Uint8Array(buf)).toString('base64');
     }
@@ -77,7 +76,7 @@ function arrayBufferToBase64(buf) {
     return btoa(binary);
 }
 
-function pemToSpkiArrayBuffer(pem) {
+function pemToSpkiArrayBuffer(pem: string): ArrayBuffer {
     const cleaned = String(pem)
         .replace(/-----BEGIN PUBLIC KEY-----/g, '')
         .replace(/-----END PUBLIC KEY-----/g, '')
@@ -92,12 +91,12 @@ function pemToSpkiArrayBuffer(pem) {
 }
 
 export async function freedomPayMakeTracke(
-    cardNumber,        
-    expirationMonth,
-    expirationYear,
-    securityCode,
-    rsaPublicKeyPem 
-) {
+    cardNumber: string,        
+    expirationMonth: string,
+    expirationYear: string,
+    securityCode: string,
+    rsaPublicKeyPem: string 
+): Promise<string> {
     // Spec: M{PAN}={YY}{MM}:{CVV}
     const { mm, yy } = normalizeExpiration(expirationMonth, expirationYear);
     const pan = onlyDigits(cardNumber);
@@ -133,21 +132,51 @@ export async function freedomPayMakeTracke(
     }
 }
 
-export function freedomPayParseXML(response) {
+export interface FreedomPayTokenInformation {
+    accountNumberMasked: string | null;
+    token: string | null;
+    cardExpirationMonth: string | null;
+    cardExpirationYear: string | null;
+    tokenExpiration: string | null;
+    brand: string | null;
+}
 
-    const parser = new XMLParser()
+export interface FreedomPaySuccessResponse {
+    ok: true;
+    response: {
+        requestId: any;
+        decision: string;
+        reasonCode: any;
+        tokenInformation: FreedomPayTokenInformation;
+    };
+}
 
-    const json = parser.parse(response, {
+export interface FreedomPayErrorResponse {
+    ok: false;
+    response: {
+        decision: string;
+        reasonCode: any;
+        requestId: any;
+        missingFields?: any;
+    };
+}
+
+export type FreedomPayParseResult = FreedomPaySuccessResponse | FreedomPayErrorResponse;
+
+export function freedomPayParseXML(response: string): FreedomPayParseResult {
+    const parser = new XMLParser({
         ignoreAttributes: false,
         attributeNamePrefix: '@_'
     });
+
+    const json = parser.parse(response);
 
     const result = json?.['soap:Envelope']?.['soap:Body']?.['SubmitResponse']?.['SubmitResult'];
 
     const decision = result?.decision;
     const tokenInformation = result?.tokenInformation;
 
-    const textOf = (node) => {
+    const textOf = (node: any): string | null => {
         if (node == null) return null;
         if (typeof node === 'object' && '#text' in node) return node['#text'];
         return node;
@@ -190,7 +219,7 @@ export function freedomPayParseXML(response) {
     };
 }
 
-export function freedomPayValidatePem(pem) {
+export function freedomPayValidatePem(pem: string): string {
     if (!pem) {
         throw new Error('Missing RSA public key');
     }
@@ -208,20 +237,20 @@ export function freedomPayValidatePem(pem) {
 }
 
 export async function freeWayBuildXML(
-    storeId, 
-    terminalId, 
-    trackKsn, 
-    rsaPublicKeyPem, 
-    tokenType, 
-    freewayHost, 
-    cardNumber,        
-    expirationMonth,
-    expirationYear,
-    securityCode,
-    firstName,
-    lastName,
-    merchantReferenceCode = null
-) {
+    storeId: string, 
+    terminalId: string, 
+    trackKsn: string, 
+    rsaPublicKeyPem: string, 
+    tokenType: string, 
+    freewayHost: string, 
+    cardNumber: string,        
+    expirationMonth: string,
+    expirationYear: string,
+    securityCode: string,
+    firstName: string,
+    lastName: string,
+    merchantReferenceCode: string | null = null
+): Promise<string> {
     const tracke = await freedomPayMakeTracke(
         cardNumber,        
         expirationMonth,
@@ -241,7 +270,7 @@ export async function freeWayBuildXML(
         format: true,
     });
 
-    const request = {
+    const request: any = {
         storeId,
         terminalId,
         card: {

@@ -1,8 +1,19 @@
-import Shift4Tokenizer from './tokenizers/shift4/index.js'
-import FreedomPayTokenizer from './tokenizers/freedompay/index.js'
+import Shift4Tokenizer from './tokenizers/shift4/index.js';
+import FreedomPayTokenizer from './tokenizers/freedompay/index.js';
+import type { 
+    CCTokenizerConstructorOptions,
+    IShift4Tokenizer,
+    IFreedomPayTokenizer
+} from './types/index.js';
 
 export class CCTokenizer {
-    constructor({ environment, options = {} }) {
+    public environment: string;
+    public tokenizers: {
+        shift4?: IShift4Tokenizer;
+        freedomPay?: IFreedomPayTokenizer;
+    };
+
+    constructor({ environment, options = {} }: CCTokenizerConstructorOptions) {
         if (!environment) {
             throw new Error("Environment is required");
         }
@@ -36,7 +47,21 @@ export class CCTokenizer {
     }
 
     // add methods here to interact with the tokenizers
-    getTokenizer(name) {
-        return this.tokenizers[name];
+    getTokenizer(name: string): IShift4Tokenizer | IFreedomPayTokenizer | undefined {
+        return this.tokenizers[name as keyof typeof this.tokenizers];
     }
 }
+
+// Export types for consumers
+export type {
+    CCTokenizerConstructorOptions,
+    CCTokenizerOptions,
+    Shift4Config,
+    FreedomPayConfig,
+    Shift4TokenizeParams,
+    FreedomPayCardStorParams,
+    FreedomPayFreewayParams,
+    TokenizerResponse,
+    IShift4Tokenizer,
+    IFreedomPayTokenizer
+} from './types/index.js';

@@ -1,10 +1,14 @@
 {
   "name": "cc-tokenizer",
   "type": "module",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "NPM credit card tokenizer",
-  "main": "src/index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "prepublishOnly": "npm run build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -26,5 +30,15 @@
     "axios": "^1.12.2",
     "easy-soap-request": "^5.7.0",
     "fast-xml-parser": "^5.3.0"
-  }
+  },
+  "devDependencies": {
+    "@types/axios": "^0.14.4",
+    "@types/node": "^22.8.7",
+    "typescript": "^5.6.3"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ]
 }
