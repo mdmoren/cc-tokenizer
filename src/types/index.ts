@@ -34,6 +34,7 @@ export interface FreedomPayHpcConfig extends TokenizerConfig {
     terminalId?: string;     // Required for getAccessToken and paymentRequest (server-side)
     esKey?: string;          // Required for getAccessToken and paymentRequest (server-side)
     accessToken?: string;    // Required for getPaymentKey (client-side safe) - can be obtained via getAccessToken()
+    showLogging?: boolean;   // Optional - enables request/response logging for debugging
 }
 
 export interface CCTokenizerOptions {
@@ -141,6 +142,11 @@ export interface FreedomPayHpcPaymentRequestParams {
     };
 }
 
+export interface FreedomPayHpcAcknowledgeParams {
+    posSyncId: string;
+    posSyncAttemptNum: string;
+}
+
 export interface FreedomPayHpcTokenizeParams {
     cardNumber: string;
     expirationMonth: string;
@@ -210,6 +216,7 @@ export interface IFreedomPayHpcTokenizer extends ITokenizer {
     getRsaPublicKey(params: FreedomPayHpcGetRsaPublicKeyParams): Promise<TokenizerResponse>;
     getPaymentKey(params: FreedomPayHpcGetPaymentKeyParams): Promise<TokenizerResponse>;
     paymentRequest(params: FreedomPayHpcPaymentRequestParams): Promise<TokenizerResponse>;
+    acknowledge(params: FreedomPayHpcAcknowledgeParams): Promise<TokenizerResponse>;
 }
 
 // Encryptor interfaces and types
@@ -223,6 +230,7 @@ export interface EncryptorResponse {
 
 export interface EncryptorConfig {
     fpRsa: string;
+    showLogging?: boolean;   // Optional - enables request/response logging for debugging
 }
 
 export interface FreedomPayEncryptParams {

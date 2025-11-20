@@ -8,12 +8,14 @@ import type {
 export default class FreedomPayEncryptor implements IFreedomPayEncryptor {
     public name: string = 'FreedomPayEncryptor';
     private rsaPublicKey: string;
+    private showLogging: boolean;
 
-    constructor(rsaPublicKey: string) {
+    constructor(rsaPublicKey: string, showLogging: boolean = false) {
         if (!rsaPublicKey) {
             throw new Error('RSA public key is required for FreedomPay encryptor');
         }
         this.rsaPublicKey = rsaPublicKey;
+        this.showLogging = showLogging;
     }
 
     async encrypt(params: FreedomPayEncryptParams): Promise<EncryptorResponse> {
@@ -30,6 +32,18 @@ export default class FreedomPayEncryptor implements IFreedomPayEncryptor {
                 };
             }
 
+            if (this.showLogging) {
+                console.log('\n=== FreedomPayEncryptor - method: encrypt ===');
+                console.log('Operation: RSA Encryption');
+                console.log('Input Data:', {
+                    cardNumber,
+                    expirationMonth,
+                    expirationYear,
+                    securityCode,
+                    rsaPublicKey: this.rsaPublicKey
+                });
+            }
+
             // Use the existing freedomPayMakeTracke function to encrypt the data
             const trackeVal = await freedomPayMakeTracke(
                 cardNumber,
@@ -38,6 +52,12 @@ export default class FreedomPayEncryptor implements IFreedomPayEncryptor {
                 securityCode,
                 this.rsaPublicKey
             );
+
+            if (this.showLogging) {
+                console.log('Encrypted Data Length:', trackeVal.length);
+                console.log('Encrypted Data:', trackeVal);
+                console.log('=== End encrypt ===\n');
+            }
 
             return {
                 success: true,

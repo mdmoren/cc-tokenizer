@@ -99,7 +99,10 @@ export class CCEncryptor {
 
         // Initialize FreedomPay encryptor if RSA key is provided
         if (options.freedomPay && options.freedomPay.fpRsa) {
-            this.encryptors.freedomPay = new FreedomPayEncryptor(options.freedomPay.fpRsa);
+            this.encryptors.freedomPay = new FreedomPayEncryptor(
+                options.freedomPay.fpRsa,
+                options.freedomPay.showLogging || false
+            );
         }
     }
 

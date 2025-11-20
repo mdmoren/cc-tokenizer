@@ -568,6 +568,107 @@ interface EncryptorResponse {
 
 ---
 
+## What's New in Version 1.4.1
+
+### Automatic Transaction Acknowledgement
+
+Starting in version 1.4.1, FreedomPay HPC transactions are automatically acknowledged after successful payment requests. The `acknowledge` method is now called internally within `paymentRequest()` to complete the transaction workflow according to FreedomPay's requirements.
+
+**Key Points:**
+- ✅ No code changes required when upgrading from 1.4.0
+- ✅ Automatic acknowledgement for successful transactions
+- ✅ Acknowledgement status included in response data
+- ✅ Backward compatible with existing implementations
+
+**Response Enhancement:**
+```ts
+const paymentResponse = await hpcTokenizer.paymentRequest({...});
+
+console.log(paymentResponse.data);
+// Now includes:
+// {
+//   decision: "ACCEPT",
+//   reasonCode: "100",
+//   tokenInformation: {...},
+//   acknowledged: true,           // ← New acknowledgement status
+//   acknowledgeData: {...}        // ← New acknowledgement response
+// }
+```
+
+The `acknowledge()` method is also available as a standalone method if you need to manually acknowledge a transaction for edge cases or retry scenarios.
+
+### Optional Request/Response Logging
+
+Version 1.4.1 introduces optional debugging logs for both FreedomPay HPC and FreedomPay Encryptor.
+
+**Enable logging for FreedomPay HPC:**
+```ts
+const tokenizer = new CCTokenizer({
+  environment: 'test',
+  options: {
+    freedomPayHpc: {
+      enabled: true,
+      storeId: 'your-store-id',
+      terminalId: 'your-terminal-id',
+      esKey: 'your-eskey',
+      code: 'your-code',
+      key: 'your-key',
+      showLogging: true  // ← Enable detailed logging
+    }
+  }
+});
+```
+
+**Enable logging for FreedomPay Encryptor:**
+```ts
+const encryptor = new CCEncryptor({
+  freedomPay: {
+    fpRsa: 'your-rsa-public-key',
+    showLogging: true  // ← Enable encryption logging
+  }
+});
+```
+
+**What gets logged:**
+- HTTP method (GET/POST)
+- Full request URL
+- Request headers (with masked bearer tokens)
+- Request payload
+- Response status
+- Response headers
+- Response data
+
+**Example log output:**
+```
+=== FreedomPayHPC - method: paymentRequest ===
+Method: POST
+URL: https://hpc.uat.freedompay.com/api/v2.0/payments
+Headers: {
+  "Content-Type": "application/json",
+  "Authorization": "Bearer eyJhbG..."
+}
+Request Payload: {
+  "PaymentKey": "...",
+  "PaymentType": 1,
+  ...
+}
+Response Status: 200
+Response Data: {
+  "FreewayResponse": {...}
+}
+=== End paymentRequest ===
+```
+
+**Use Cases:**
+- 🔍 Debugging integration issues
+- 📝 Understanding API request/response flow
+- 🐛 Troubleshooting failed transactions
+- 📊 Monitoring API behavior
+
+**Important:** Only enable logging in development/testing environments. Never log sensitive data in production.
+
+---
+
 ## Notes
 
 - Obtain credentials and configuration values from your Shift4 and FreedomPay representatives.

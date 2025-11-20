@@ -38,6 +38,7 @@ export interface CommonFreedomPayHpcConfig {
         rsaKeys: string;
         paymentKey: string;
         payments: string;
+        acknowledge: string;
     };
 }
 
@@ -92,7 +93,8 @@ export const globalConfig: GlobalConfig = {
                 sessionInitialize: "/api/v2.0/session/initialize",
                 rsaKeys: "/dmpservice/api/v3/keys",
                 paymentKey: "/api/v2.0/payments/key",
-                payments: "/api/v2.0/payments"
+                payments: "/api/v2.0/payments",
+                acknowledge: "/api/v2.0/payments/acknowledge"
             }
         },
         production: {

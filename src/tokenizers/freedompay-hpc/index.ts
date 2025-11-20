@@ -4,7 +4,8 @@ import {
     validateGetAccessTokenPayload,
     validateGetRsaPublicKeyPayload, 
     validateGetPaymentKeyPayload,
-    validatePaymentRequestPayload 
+    validatePaymentRequestPayload,
+    validateAcknowledgePayload
 } from './helpers/validation.js';
 import axios from 'axios';
 import CCEncryptor from '../../Encryptors/freedompay/index.js';
@@ -17,6 +18,7 @@ import type {
     FreedomPayHpcGetPaymentKeyParams,
     FreedomPayHpcPaymentRequestParams,
     FreedomPayHpcTokenizeParams,
+    FreedomPayHpcAcknowledgeParams,
     TokenizerResponse
 } from '../../types/index.js';
 
@@ -29,6 +31,7 @@ class FreedomPayHpcTokenizer implements IFreedomPayHpcTokenizer {
         rsaKeys: string;
         paymentKey: string;
         payments: string;
+        acknowledge: string;
     };
     private code?: string;
     private key?: string;
@@ -36,6 +39,7 @@ class FreedomPayHpcTokenizer implements IFreedomPayHpcTokenizer {
     private terminalId?: string;
     private esKey?: string;
     private accessToken?: string;
+    private showLogging: boolean;
 
     constructor(environment: string, config: FreedomPayHpcConfig) {
         const envConfig = globalConfig.freedomPayHpc[environment as 'production' | 'test'];
@@ -54,6 +58,7 @@ class FreedomPayHpcTokenizer implements IFreedomPayHpcTokenizer {
         this.terminalId = config.terminalId;
         this.esKey = config.esKey;
         this.accessToken = config.accessToken;
+        this.showLogging = config.showLogging || false;
     }
 
     /**
@@ -116,7 +121,7 @@ class FreedomPayHpcTokenizer implements IFreedomPayHpcTokenizer {
             const trackKsn = rsaResponse.data.trackKsn; // Get trackKsn from RSA response
 
             // Step 3: Encrypt card data
-            const encryptor = new CCEncryptor(publicKey);
+            const encryptor = new CCEncryptor(publicKey, this.showLogging);
 
             const encryptionResponse = await encryptor.encrypt({
                 cardNumber: params.cardNumber,
@@ -234,7 +239,22 @@ class FreedomPayHpcTokenizer implements IFreedomPayHpcTokenizer {
                 }
             };
 
+            if (this.showLogging) {
+                console.log('\n=== FreedomPayHPC - method: getAccessToken ===');
+                console.log('Method: POST');
+                console.log('URL:', url);
+                console.log('Headers:', JSON.stringify(headers, null, 2));
+                console.log('Request Payload:', JSON.stringify(payload, null, 2));
+            }
+
             const apiResponse = await axios.post(url, payload, { headers });
+
+            if (this.showLogging) {
+                console.log('Response Status:', apiResponse.status);
+                console.log('Response Headers:', JSON.stringify(apiResponse.headers, null, 2));
+                console.log('Response Data:', JSON.stringify(apiResponse.data, null, 2));
+                console.log('=== End getAccessToken ===\n');
+            }
 
             if (apiResponse.data && apiResponse.data.access_token) {
                 // Update the instance's accessToken for subsequent calls
@@ -288,7 +308,20 @@ class FreedomPayHpcTokenizer implements IFreedomPayHpcTokenizer {
 
             const url = `${this.baseUrlEnterpriseServices}${this.routes.rsaKeys}?code=${params.code}&key=${params.key}`;
             
+            if (this.showLogging) {
+                console.log('\n=== FreedomPayHPC - method: getRsaPublicKey ===');
+                console.log('Method: GET');
+                console.log('URL:', url);
+            }
+
             const apiResponse = await axios.get(url);
+
+            if (this.showLogging) {
+                console.log('Response Status:', apiResponse.status);
+                console.log('Response Headers:', JSON.stringify(apiResponse.headers, null, 2));
+                console.log('Response Data:', JSON.stringify(apiResponse.data, null, 2));
+                console.log('=== End getRsaPublicKey ===\n');
+            }
 
             if (apiResponse.data && apiResponse.data.publicKey) {
                 response.success = true;
@@ -353,7 +386,22 @@ class FreedomPayHpcTokenizer implements IFreedomPayHpcTokenizer {
                 attributes: params.attributes || {}
             };
 
+            if (this.showLogging) {
+                console.log('\n=== FreedomPayHPC - method: getPaymentKey ===');
+                console.log('Method: POST');
+                console.log('URL:', url);
+                console.log('Headers:', JSON.stringify(headers, null, 2));
+                console.log('Request Payload:', JSON.stringify(payload, null, 2));
+            }
+
             const apiResponse = await axios.post(url, payload, { headers });
+
+            if (this.showLogging) {
+                console.log('Response Status:', apiResponse.status);
+                console.log('Response Headers:', JSON.stringify(apiResponse.headers, null, 2));
+                console.log('Response Data:', JSON.stringify(apiResponse.data, null, 2));
+                console.log('=== End getPaymentKey ===\n');
+            }
 
             if (apiResponse.data && apiResponse.data.PaymentKeys && apiResponse.data.PaymentKeys.length > 0) {
                 response.success = true;
@@ -469,7 +517,22 @@ class FreedomPayHpcTokenizer implements IFreedomPayHpcTokenizer {
                 payload.RequestMessage.clientMetadata = params.clientMetadata;
             }
 
+            if (this.showLogging) {
+                console.log('\n=== FreedomPayHPC - method: paymentRequest ===');
+                console.log('Method: POST');
+                console.log('URL:', url);
+                console.log('Headers:', JSON.stringify(headers, null, 2));
+                console.log('Request Payload:', JSON.stringify(payload, null, 2));
+            }
+
             const apiResponse = await axios.post(url, payload, { headers });
+
+            if (this.showLogging) {
+                console.log('Response Status:', apiResponse.status);
+                console.log('Response Headers:', JSON.stringify(apiResponse.headers, null, 2));
+                console.log('Response Data:', JSON.stringify(apiResponse.data, null, 2));
+                console.log('=== End paymentRequest ===\n');
+            }
 
             if (apiResponse.data && apiResponse.data.FreewayResponse) {
                 const freewayResponse = apiResponse.data.FreewayResponse;
@@ -480,6 +543,17 @@ class FreedomPayHpcTokenizer implements IFreedomPayHpcTokenizer {
                 const isSuccess = reasonCode === "100" || freewayResponse.decision === "ACCEPT";
 
                 if (isSuccess) {
+                    // Acknowledge the transaction
+                    const acknowledgeResponse = await this.acknowledge({
+                        posSyncId: payload.PosSyncId,
+                        posSyncAttemptNum: payload.posSyncAttemptNum
+                    });
+
+                    if (!acknowledgeResponse.success) {
+                        response.message = 'Warning: Payment successful but acknowledgement failed';
+                        response.errors.push(acknowledgeResponse.errors);
+                    }
+
                     response.success = true;
                     response.message = 'Payment request successful - token created';
                     response.data = {
@@ -489,7 +563,9 @@ class FreedomPayHpcTokenizer implements IFreedomPayHpcTokenizer {
                         merchantReferenceCode: freewayResponse.merchantReferenceCode,
                         tokenInformation: freewayResponse.tokenInformation || {},
                         ccAuthReply: freewayResponse.ccAuthReply,
-                        tokenCreateReply: freewayResponse.tokenCreateReply
+                        tokenCreateReply: freewayResponse.tokenCreateReply,
+                        acknowledged: acknowledgeResponse.success,
+                        acknowledgeData: acknowledgeResponse.data
                     };
                 } else {
                     response.message = 'Error: payment request failed';
@@ -503,6 +579,81 @@ class FreedomPayHpcTokenizer implements IFreedomPayHpcTokenizer {
             return response;
         } catch (error: any) {
             response.message = error.message || 'Internal Error: could not complete payment request';
+            response.errors.push(error.response?.data || error.stack || {});
+            return response;
+        }
+    }
+
+    /**
+     * Acknowledge a payment transaction
+     * This method confirms receipt of the payment response and should be called
+     * after a successful paymentRequest to complete the transaction workflow
+     * 
+     * SERVER-SIDE ONLY: Requires accessToken (bearer token)
+     * 
+     * @returns TokenizerResponse with acknowledgement status and data
+     */
+    async acknowledge(params: FreedomPayHpcAcknowledgeParams): Promise<TokenizerResponse> {
+        let response: TokenizerResponse = {
+            success: false,
+            message: '',
+            data: {},
+            errors: []
+        };
+
+        try {
+            const schemaValidation = validateAcknowledgePayload(params);
+            if (!schemaValidation.ok) {
+                response.message = 'Error: Schema Validation Failed';
+                response.errors = schemaValidation.errors || [];
+                return response;
+            }
+
+            if (!this.accessToken) {
+                response.message = 'Error: accessToken is required for acknowledge method';
+                response.errors.push('accessToken configuration is missing');
+                return response;
+            }
+
+            const url = `${this.baseUrlHpc}${this.routes.acknowledge}`;
+            const headers = {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${this.accessToken}`
+            };
+
+            const payload = {
+                PosSyncId: params.posSyncId,
+                PosSyncAttemptNum: params.posSyncAttemptNum
+            };
+
+            if (this.showLogging) {
+                console.log('\n=== FreedomPayHPC - method: acknowledge ===');
+                console.log('Method: POST');
+                console.log('URL:', url);
+                console.log('Headers:', JSON.stringify(headers, null, 2));
+                console.log('Request Payload:', JSON.stringify(payload, null, 2));
+            }
+
+            const apiResponse = await axios.post(url, payload, { headers });
+
+            if (this.showLogging) {
+                console.log('Response Status:', apiResponse.status);
+                console.log('Response Headers:', JSON.stringify(apiResponse.headers, null, 2));
+                console.log('=== End acknowledge ===\n');
+            }
+
+            if (apiResponse.status === 204) {
+                response.success = true;
+                response.message = 'Transaction acknowledged successfully';
+                response.data = apiResponse.data || { status: 'acknowledged' };
+            } else {
+                response.message = 'Error: could not acknowledge transaction';
+                response.errors.push(apiResponse.data || 'Invalid response from server');
+            }
+
+            return response;
+        } catch (error: any) {
+            response.message = error.message || 'Internal Error: could not acknowledge transaction';
             response.errors.push(error.response?.data || error.stack || {});
             return response;
         }

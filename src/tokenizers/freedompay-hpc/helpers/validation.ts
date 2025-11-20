@@ -4,7 +4,8 @@ import type {
     FreedomPayHpcGetRsaPublicKeyParams,
     FreedomPayHpcGetPaymentKeyParams,
     FreedomPayHpcPaymentRequestParams,
-    FreedomPayHpcTokenizeParams
+    FreedomPayHpcTokenizeParams,
+    FreedomPayHpcAcknowledgeParams
 } from '../../../types/index.js';
 
 export function validateTokenizePayload(params: FreedomPayHpcTokenizeParams): ValidationResult {
@@ -115,6 +116,23 @@ export function validatePaymentRequestPayload(params: FreedomPayHpcPaymentReques
     }
 
     // merchantReferenceCode is optional
+
+    return {
+        ok: errors.length === 0,
+        errors: errors.length > 0 ? errors : undefined
+    };
+}
+
+export function validateAcknowledgePayload(params: FreedomPayHpcAcknowledgeParams): ValidationResult {
+    const errors: string[] = [];
+
+    if (!params.posSyncId || params.posSyncId.trim() === '') {
+        errors.push('posSyncId is required');
+    }
+
+    if (!params.posSyncAttemptNum || params.posSyncAttemptNum.trim() === '') {
+        errors.push('posSyncAttemptNum is required');
+    }
 
     return {
         ok: errors.length === 0,
