@@ -466,6 +466,8 @@ class FreedomPayHpcTokenizer implements IFreedomPayHpcTokenizer {
                 PosSyncId: params.posSyncId || `${new Date().toISOString()};${Date.now()};${Date.now()};${randomUUID()}`,
                 posSyncAttemptNum: params.posSyncAttemptNum || "1",
                 RequestMessage: {
+                    Industrydatatype: 'hotel',
+                    cofIndicator: 'S',
                     storeId: params.storeId,
                     terminalId: params.terminalId,
                     esKey: params.esKey,
@@ -474,7 +476,16 @@ class FreedomPayHpcTokenizer implements IFreedomPayHpcTokenizer {
                     },
                     ccAuthService: {
                         run: "true",
-                        transType: params.transType || "verify" // "verify" for tokenization, "purchase" for payment
+                        commerceIndicator: "internet"
+                        // transType: params.transType || "verify" // "verify" for tokenization, "purchase" for payment
+                    },
+                    clientMetadata: params.clientMetadata,
+                    hotelData: null, // empty for tokenization
+                        folioNumber: "",
+                        expectedDuration: "",
+                        checkinDate: "",
+                        checkoutDate: "",
+                        roomTax: "0.00"
                     },
                     tokenCreateService: {
                         run: "true",
@@ -511,10 +522,6 @@ class FreedomPayHpcTokenizer implements IFreedomPayHpcTokenizer {
 
             if (params.items && params.items.length > 0) {
                 payload.RequestMessage.items = params.items;
-            }
-
-            if (params.clientMetadata) {
-                payload.RequestMessage.clientMetadata = params.clientMetadata;
             }
 
             if (this.showLogging) {

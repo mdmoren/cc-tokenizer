@@ -27,6 +27,23 @@ export function validateTokenizePayload(params: FreedomPayHpcTokenizeParams): Va
         errors.push('securityCode is required');
     }
 
+    if (!params.clientMetadata) {
+        errors.push('clientMetadata is required');
+    } else {
+        if (!params.clientMetadata.sellingSystemName || params.clientMetadata.sellingSystemName.trim() === '') {
+            errors.push('clientMetadata.sellingSystemName is required');
+        }
+        if (!params.clientMetadata.sellingSystemVersion || params.clientMetadata.sellingSystemVersion.trim() === '') {
+            errors.push('clientMetadata.sellingSystemVersion is required');
+        }
+        if (!params.clientMetadata.sellingMiddlewareName || params.clientMetadata.sellingMiddlewareName.trim() === '') {
+            errors.push('clientMetadata.sellingMiddlewareName is required');
+        }
+        if (!params.clientMetadata.sellingMiddlewareVersion || params.clientMetadata.sellingMiddlewareVersion.trim() === '') {
+            errors.push('clientMetadata.sellingMiddlewareVersion is required');
+        }
+    }
+
     return {
         ok: errors.length === 0,
         errors: errors.length > 0 ? errors : undefined
@@ -113,6 +130,23 @@ export function validatePaymentRequestPayload(params: FreedomPayHpcPaymentReques
 
     if (!params.trackKsn || params.trackKsn.trim() === '') {
         errors.push('trackKsn is required');
+    }
+
+    if (!params.clientMetadata) {
+        errors.push('clientMetadata is required');
+    } else {
+        if (!params.clientMetadata.sellingSystemName || params.clientMetadata.sellingSystemName.trim() === '') {
+            errors.push('clientMetadata.sellingSystemName is required');
+        }
+        if (!params.clientMetadata.sellingSystemVersion || params.clientMetadata.sellingSystemVersion.trim() === '') {
+            errors.push('clientMetadata.sellingSystemVersion is required');
+        }
+        if (!params.clientMetadata.sellingMiddlewareName || params.clientMetadata.sellingMiddlewareName.trim() === '') {
+            errors.push('clientMetadata.sellingMiddlewareName is required');
+        }
+        if (!params.clientMetadata.sellingMiddlewareVersion || params.clientMetadata.sellingMiddlewareVersion.trim() === '') {
+            errors.push('clientMetadata.sellingMiddlewareVersion is required');
+        }
     }
 
     // merchantReferenceCode is optional

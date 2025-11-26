@@ -134,11 +134,11 @@ export interface FreedomPayHpcPaymentRequestParams {
     items?: FreedomPayHpcPaymentRequestItem[];
     posSyncId?: string;
     posSyncAttemptNum?: string;
-    clientMetadata?: {
-        sellingSystemName?: string;
-        sellingSystemVersion?: string;
-        sellingMiddlewareName?: string;
-        sellingMiddlewareVersion?: string;
+    clientMetadata: {
+        sellingSystemName: string;
+        sellingSystemVersion: string;
+        sellingMiddlewareName: string;
+        sellingMiddlewareVersion: string;
     };
 }
 
@@ -162,11 +162,11 @@ export interface FreedomPayHpcTokenizeParams {
     items?: FreedomPayHpcPaymentRequestItem[];
     posSyncId?: string;
     posSyncAttemptNum?: string;
-    clientMetadata?: {
-        sellingSystemName?: string;
-        sellingSystemVersion?: string;
-        sellingMiddlewareName?: string;
-        sellingMiddlewareVersion?: string;
+    clientMetadata: {
+        sellingSystemName: string;
+        sellingSystemVersion: string;
+        sellingMiddlewareName: string;
+        sellingMiddlewareVersion: string;
     };
 }
 
