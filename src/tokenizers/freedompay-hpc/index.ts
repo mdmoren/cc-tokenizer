@@ -480,7 +480,7 @@ class FreedomPayHpcTokenizer implements IFreedomPayHpcTokenizer {
                         // transType: params.transType || "verify" // "verify" for tokenization, "purchase" for payment
                     },
                     clientMetadata: params.clientMetadata,
-                    hotelData: null, // empty for tokenization
+                    hotelData: {
                         folioNumber: "",
                         expectedDuration: "",
                         checkinDate: "",
