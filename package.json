@@ -1,7 +1,7 @@
 {
   "name": "cc-tokenizer",
   "type": "module",
-  "version": "1.4.5",
+  "version": "1.4.6",
   "description": "NPM credit card tokenizer",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
