@@ -170,7 +170,8 @@ class FreedomPayHpcTokenizer implements IFreedomPayHpcTokenizer {
                 items: params.items,
                 posSyncId: params.posSyncId,
                 posSyncAttemptNum: params.posSyncAttemptNum,
-                clientMetadata: params.clientMetadata
+                clientMetadata: params.clientMetadata,
+                hotelData: params.hotelData
             });
 
             if (!paymentResponse.success) {
@@ -480,13 +481,7 @@ class FreedomPayHpcTokenizer implements IFreedomPayHpcTokenizer {
                         // transType: params.transType || "verify" // "verify" for tokenization, "purchase" for payment
                     },
                     clientMetadata: params.clientMetadata,
-                    hotelData: {
-                        folioNumber: "",
-                        expectedDuration: "",
-                        checkinDate: "",
-                        checkoutDate: "",
-                        roomTax: "0.00"
-                    },
+                    hotelData: params.hotelData,
                     tokenCreateService: {
                         run: "true",
                         ...(params.tokenCreateType && { type: params.tokenCreateType })

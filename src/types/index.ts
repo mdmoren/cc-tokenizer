@@ -119,19 +119,26 @@ export interface FreedomPayHpcPaymentRequestItem {
 
 export interface FreedomPayHpcPaymentRequestParams {
     paymentKey: string;
-    paymentType: number; // 1 for Card
+    paymentType: number;
     storeId: string;
     terminalId: string;
     esKey: string;
-    trackKsn: string; // Required for tracking
+    trackKsn: string;
     nameOnCard?: string;
-    merchantReferenceCode?: string; // Optional - defaults to empty string
-    chargeAmount?: string; // default "0.00" for tokenization
-    transType?: string; // Optional - "purchase", "verify", etc. Default: "verify" for tokenization
-    tokenCreateType?: string; // Optional - token type for ccTokenCreateService (e.g., "6" for FreedomPay default)
-    enableCapture?: boolean; // Optional - whether to include ccCaptureService. Default: false for tokenization
+    merchantReferenceCode?: string;
+    chargeAmount?: string;
+    transType?: string;
+    tokenCreateType?: string;
+    enableCapture?: boolean;
     invoiceNumber?: string;
-    items?: FreedomPayHpcPaymentRequestItem[];
+    items?: Array<{
+        unitPrice: string;
+        quantity: string;
+        productName?: string;
+        productSKU?: string;
+        productCode?: string;
+        taxAmount?: string;
+    }>;
     posSyncId?: string;
     posSyncAttemptNum?: string;
     clientMetadata: {
@@ -139,6 +146,13 @@ export interface FreedomPayHpcPaymentRequestParams {
         sellingSystemVersion: string;
         sellingMiddlewareName: string;
         sellingMiddlewareVersion: string;
+    };
+    hotelData: {
+        folioNumber: string;
+        expectedDuration: string;
+        checkinDate: string;
+        checkoutDate: string;
+        roomTax: string;
     };
 }
 
@@ -152,14 +166,21 @@ export interface FreedomPayHpcTokenizeParams {
     expirationMonth: string;
     expirationYear: string;
     securityCode: string;
-    nameOnCard?: string;
+    nameOnCard: string;
     merchantReferenceCode?: string;
-    chargeAmount?: string; // default "0.00" for tokenization
-    transType?: string; // Optional - "purchase", "verify", etc. Default: "verify" for tokenization
-    tokenCreateType?: string; // Optional - token type for ccTokenCreateService (e.g., "6" for FreedomPay default)
-    enableCapture?: boolean; // Optional - whether to include ccCaptureService. Default: false for tokenization
+    chargeAmount?: string;
+    transType?: string;
+    tokenCreateType?: string;
+    enableCapture?: boolean;
     invoiceNumber?: string;
-    items?: FreedomPayHpcPaymentRequestItem[];
+    items?: Array<{
+        unitPrice: string;
+        quantity: string;
+        productName?: string;
+        productSKU?: string;
+        productCode?: string;
+        taxAmount?: string;
+    }>;
     posSyncId?: string;
     posSyncAttemptNum?: string;
     clientMetadata: {
@@ -167,6 +188,13 @@ export interface FreedomPayHpcTokenizeParams {
         sellingSystemVersion: string;
         sellingMiddlewareName: string;
         sellingMiddlewareVersion: string;
+    };
+    hotelData: {
+        folioNumber: string;
+        expectedDuration: string;
+        checkinDate: string;
+        checkoutDate: string;
+        roomTax: string;
     };
 }
 
