@@ -49,20 +49,20 @@ export function validateTokenizePayload(params: any): ValidationResult {
     if (!params.hotelData || typeof params.hotelData !== 'object') {
         errors.push('hotelData is required and must be an object');
     } else {
-        if (!params.hotelData.folioNumber || typeof params.hotelData.folioNumber !== 'string') {
-            errors.push('hotelData.folioNumber is required and must be a string');
+        if (typeof params.hotelData.folioNumber !== 'string') {
+            errors.push('hotelData.folioNumber must be a string');
         }
-        if (!params.hotelData.expectedDuration || typeof params.hotelData.expectedDuration !== 'string') {
-            errors.push('hotelData.expectedDuration is required and must be a string');
+        if (typeof params.hotelData.expectedDuration !== 'string') {
+            errors.push('hotelData.expectedDuration must be a string');
         }
-        if (!params.hotelData.checkinDate || typeof params.hotelData.checkinDate !== 'string') {
-            errors.push('hotelData.checkinDate is required and must be a string');
+        if (typeof params.hotelData.checkinDate !== 'string') {
+            errors.push('hotelData.checkinDate must be a string');
         }
-        if (!params.hotelData.checkoutDate || typeof params.hotelData.checkoutDate !== 'string') {
-            errors.push('hotelData.checkoutDate is required and must be a string');
+        if (typeof params.hotelData.checkoutDate !== 'string') {
+            errors.push('hotelData.checkoutDate must be a string');
         }
-        if (!params.hotelData.roomTax || typeof params.hotelData.roomTax !== 'string') {
-            errors.push('hotelData.roomTax is required and must be a string');
+        if (typeof params.hotelData.roomTax !== 'string') {
+            errors.push('hotelData.roomTax must be a string');
         }
     }
 
@@ -171,20 +171,20 @@ export function validatePaymentRequestPayload(params: any): ValidationResult {
     if (!params.hotelData || typeof params.hotelData !== 'object') {
         errors.push('hotelData is required and must be an object');
     } else {
-        if (!params.hotelData.folioNumber || typeof params.hotelData.folioNumber !== 'string') {
-            errors.push('hotelData.folioNumber is required and must be a string');
+        if (typeof params.hotelData.folioNumber !== 'string') {
+            errors.push('hotelData.folioNumber must be a string');
         }
-        if (!params.hotelData.expectedDuration || typeof params.hotelData.expectedDuration !== 'string') {
-            errors.push('hotelData.expectedDuration is required and must be a string');
+        if (typeof params.hotelData.expectedDuration !== 'string') {
+            errors.push('hotelData.expectedDuration must be a string');
         }
-        if (!params.hotelData.checkinDate || typeof params.hotelData.checkinDate !== 'string') {
-            errors.push('hotelData.checkinDate is required and must be a string');
+        if (typeof params.hotelData.checkinDate !== 'string') {
+            errors.push('hotelData.checkinDate must be a string');
         }
-        if (!params.hotelData.checkoutDate || typeof params.hotelData.checkoutDate !== 'string') {
-            errors.push('hotelData.checkoutDate is required and must be a string');
+        if (typeof params.hotelData.checkoutDate !== 'string') {
+            errors.push('hotelData.checkoutDate must be a string');
         }
-        if (!params.hotelData.roomTax || typeof params.hotelData.roomTax !== 'string') {
-            errors.push('hotelData.roomTax is required and must be a string');
+        if (typeof params.hotelData.roomTax !== 'string') {
+            errors.push('hotelData.roomTax must be a string');
         }
     }
 
