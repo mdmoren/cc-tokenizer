@@ -147,12 +147,12 @@ export interface FreedomPayHpcPaymentRequestParams {
         sellingMiddlewareName: string;
         sellingMiddlewareVersion: string;
     };
-    hotelData: {
-        folioNumber: string;
-        expectedDuration: string;
-        checkinDate: string;
-        checkoutDate: string;
-        roomTax: string;
+    hotelData?: {
+        folioNumber?: string;
+        expectedDuration?: string;
+        checkinDate?: string;
+        checkoutDate?: string;
+        roomTax?: string;
     };
 }
 
@@ -189,12 +189,12 @@ export interface FreedomPayHpcTokenizeParams {
         sellingMiddlewareName: string;
         sellingMiddlewareVersion: string;
     };
-    hotelData: {
-        folioNumber: string;
-        expectedDuration: string;
-        checkinDate: string;
-        checkoutDate: string;
-        roomTax: string;
+    hotelData?: {
+        folioNumber?: string;
+        expectedDuration?: string;
+        checkinDate?: string;
+        checkoutDate?: string;
+        roomTax?: string;
     };
 }
 

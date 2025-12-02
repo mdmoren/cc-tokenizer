@@ -45,24 +45,26 @@ export function validateTokenizePayload(params: any): ValidationResult {
         }
     }
 
-    // Validate hotelData
-    if (!params.hotelData || typeof params.hotelData !== 'object') {
-        errors.push('hotelData is required and must be an object');
-    } else {
-        if (typeof params.hotelData.folioNumber !== 'string') {
-            errors.push('hotelData.folioNumber must be a string');
-        }
-        if (typeof params.hotelData.expectedDuration !== 'string') {
-            errors.push('hotelData.expectedDuration must be a string');
-        }
-        if (typeof params.hotelData.checkinDate !== 'string') {
-            errors.push('hotelData.checkinDate must be a string');
-        }
-        if (typeof params.hotelData.checkoutDate !== 'string') {
-            errors.push('hotelData.checkoutDate must be a string');
-        }
-        if (typeof params.hotelData.roomTax !== 'string') {
-            errors.push('hotelData.roomTax must be a string');
+    // Validate hotelData (optional, but if provided must be an object with valid fields)
+    if (params.hotelData !== undefined) {
+        if (typeof params.hotelData !== 'object' || params.hotelData === null) {
+            errors.push('hotelData must be an object');
+        } else {
+            if (params.hotelData.folioNumber !== undefined && typeof params.hotelData.folioNumber !== 'string') {
+                errors.push('hotelData.folioNumber must be a string');
+            }
+            if (params.hotelData.expectedDuration !== undefined && typeof params.hotelData.expectedDuration !== 'string') {
+                errors.push('hotelData.expectedDuration must be a string');
+            }
+            if (params.hotelData.checkinDate !== undefined && typeof params.hotelData.checkinDate !== 'string') {
+                errors.push('hotelData.checkinDate must be a string');
+            }
+            if (params.hotelData.checkoutDate !== undefined && typeof params.hotelData.checkoutDate !== 'string') {
+                errors.push('hotelData.checkoutDate must be a string');
+            }
+            if (params.hotelData.roomTax !== undefined && typeof params.hotelData.roomTax !== 'string') {
+                errors.push('hotelData.roomTax must be a string');
+            }
         }
     }
 
@@ -167,24 +169,26 @@ export function validatePaymentRequestPayload(params: any): ValidationResult {
         }
     }
 
-    // Validate hotelData
-    if (!params.hotelData || typeof params.hotelData !== 'object') {
-        errors.push('hotelData is required and must be an object');
-    } else {
-        if (typeof params.hotelData.folioNumber !== 'string') {
-            errors.push('hotelData.folioNumber must be a string');
-        }
-        if (typeof params.hotelData.expectedDuration !== 'string') {
-            errors.push('hotelData.expectedDuration must be a string');
-        }
-        if (typeof params.hotelData.checkinDate !== 'string') {
-            errors.push('hotelData.checkinDate must be a string');
-        }
-        if (typeof params.hotelData.checkoutDate !== 'string') {
-            errors.push('hotelData.checkoutDate must be a string');
-        }
-        if (typeof params.hotelData.roomTax !== 'string') {
-            errors.push('hotelData.roomTax must be a string');
+    // Validate hotelData (optional, but if provided must be an object with valid fields)
+    if (params.hotelData !== undefined) {
+        if (typeof params.hotelData !== 'object' || params.hotelData === null) {
+            errors.push('hotelData must be an object');
+        } else {
+            if (params.hotelData.folioNumber !== undefined && typeof params.hotelData.folioNumber !== 'string') {
+                errors.push('hotelData.folioNumber must be a string');
+            }
+            if (params.hotelData.expectedDuration !== undefined && typeof params.hotelData.expectedDuration !== 'string') {
+                errors.push('hotelData.expectedDuration must be a string');
+            }
+            if (params.hotelData.checkinDate !== undefined && typeof params.hotelData.checkinDate !== 'string') {
+                errors.push('hotelData.checkinDate must be a string');
+            }
+            if (params.hotelData.checkoutDate !== undefined && typeof params.hotelData.checkoutDate !== 'string') {
+                errors.push('hotelData.checkoutDate must be a string');
+            }
+            if (params.hotelData.roomTax !== undefined && typeof params.hotelData.roomTax !== 'string') {
+                errors.push('hotelData.roomTax must be a string');
+            }
         }
     }
 
