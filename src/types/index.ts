@@ -35,6 +35,7 @@ export interface FreedomPayHpcConfig extends TokenizerConfig {
     esKey?: string;          // Required for getAccessToken and paymentRequest (server-side)
     accessToken?: string;    // Required for getPaymentKey (client-side safe) - can be obtained via getAccessToken()
     showLogging?: boolean;   // Optional - enables request/response logging for debugging
+    fullyMaskCardNumber?: boolean; // Optional - when true, masks all but last 4 digits of card number in response
 }
 
 export interface CCTokenizerOptions {

@@ -40,6 +40,7 @@ class FreedomPayHpcTokenizer implements IFreedomPayHpcTokenizer {
     private esKey?: string;
     private accessToken?: string;
     private showLogging: boolean;
+    private fullyMaskCardNumber: boolean;
 
     constructor(environment: string, config: FreedomPayHpcConfig) {
         const envConfig = globalConfig.freedomPayHpc[environment as 'production' | 'test'];
@@ -59,6 +60,7 @@ class FreedomPayHpcTokenizer implements IFreedomPayHpcTokenizer {
         this.esKey = config.esKey;
         this.accessToken = config.accessToken;
         this.showLogging = config.showLogging || false;
+        this.fullyMaskCardNumber = config.fullyMaskCardNumber || false;
     }
 
     /**
@@ -529,6 +531,11 @@ class FreedomPayHpcTokenizer implements IFreedomPayHpcTokenizer {
 
             const apiResponse = await axios.post(url, payload, { headers });
 
+            // check if fullyMaskCardNumber is enabled and mask the tokenInformation.accountNumberMasked in the response
+            if (this.fullyMaskCardNumber && apiResponse.data?.FreewayResponse?.tokenInformation?.accountNumberMasked) {
+                apiResponse.data.FreewayResponse.tokenInformation.accountNumberMasked = this.fullyMaskCardNumberMethod(apiResponse.data.FreewayResponse.tokenInformation.accountNumberMasked);
+            }
+
             if (this.showLogging) {
                 console.log('Response Status:', apiResponse.status);
                 console.log('Response Headers:', JSON.stringify(apiResponse.headers, null, 2));
@@ -584,6 +591,20 @@ class FreedomPayHpcTokenizer implements IFreedomPayHpcTokenizer {
             response.errors.push(error.response?.data || error.stack || {});
             return response;
         }
+    }
+
+    /**
+    * Fully Mask Card Number
+    * Mask everything except the last four digits of the card number
+    * FreedomPay mask Card Number comes in the format "432100xxxxxx1234"
+    * We want to convert it to "xxxxxxxxxxxx1234"
+    * retain the length of the card number by replacing leading digits with 'x'
+    */
+    private fullyMaskCardNumberMethod(fpMaskedCardNumber: string): string {
+        const lastFourDigits = fpMaskedCardNumber.slice(-4);
+        const maskedLength = fpMaskedCardNumber.length - 4;
+        const fullyMasked = 'x'.repeat(maskedLength) + lastFourDigits;
+        return fullyMasked;
     }
 
     /**
