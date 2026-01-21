@@ -169,6 +169,7 @@ class FreedomPayHpcTokenizer implements IFreedomPayHpcTokenizer {
                 tokenCreateType: params.tokenCreateType,
                 enableCapture: params.enableCapture,
                 invoiceNumber: params.invoiceNumber,
+                commerceIndicator: params.commerceIndicator,
                 items: params.items,
                 posSyncId: params.posSyncId,
                 posSyncAttemptNum: params.posSyncAttemptNum,
@@ -477,7 +478,7 @@ class FreedomPayHpcTokenizer implements IFreedomPayHpcTokenizer {
                     },
                     ccAuthService: {
                         run: "true",
-                        commerceIndicator: "internet",
+                        commerceIndicator: params.commerceIndicator || "internet",
                         cofIndicator: 'S',
                         industrydatatype: 'hotel',
                         // transType: params.transType || "verify" // "verify" for tokenization, "purchase" for payment
@@ -500,8 +501,8 @@ class FreedomPayHpcTokenizer implements IFreedomPayHpcTokenizer {
                 payload.RequestMessage.ccCaptureService = {
                     run: "true"
                 };
-                // Also set commerceIndicator for capture
-                payload.RequestMessage.ccAuthService.commerceIndicator = "internet";
+                // Also set commerceIndicator for capture (use provided value or default)
+                payload.RequestMessage.ccAuthService.commerceIndicator = params.commerceIndicator || "internet";
             }
 
             // Add optional fields

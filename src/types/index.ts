@@ -132,6 +132,7 @@ export interface FreedomPayHpcPaymentRequestParams {
     tokenCreateType?: string;
     enableCapture?: boolean;
     invoiceNumber?: string;
+    commerceIndicator?: string;
     items?: Array<{
         unitPrice: string;
         quantity: string;
@@ -174,6 +175,7 @@ export interface FreedomPayHpcTokenizeParams {
     tokenCreateType?: string;
     enableCapture?: boolean;
     invoiceNumber?: string;
+    commerceIndicator?: string;
     items?: Array<{
         unitPrice: string;
         quantity: string;
